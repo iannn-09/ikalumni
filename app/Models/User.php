@@ -2,6 +2,20 @@
 
 namespace App\Models;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     type="object",
+ *     title="User",
+ *     description="Model data user",
+ *     @OA\Property(property="id", type="integer", description="ID user"),
+ *     @OA\Property(property="name", type="string", description="Nama user"),
+ *     @OA\Property(property="email", type="string", format="email", description="Email user"),
+ *     @OA\Property(property="email_verified_at", type="string", format="date-time", nullable=true, description="Tanggal verifikasi email"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", description="Tanggal dibuat"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", description="Tanggal diupdate")
+ * )
+ */
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
