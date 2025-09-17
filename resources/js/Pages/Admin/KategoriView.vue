@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, h, onMounted, reactive } from "vue";
 import DashboardLayout from "@/Layouts/DashboardLayout.vue";
 import DataTable from "@/Components/ui/datatable/DataTable.vue";
@@ -15,6 +15,7 @@ import Card from "@/Components/ui/card/Card.vue";
 import CardContent from "@/Components/ui/card/CardContent.vue";
 import CardHeader from "@/Components/ui/card/CardHeader.vue";
 import CardTitle from "@/Components/ui/card/CardTitle.vue";
+import { ColumnDef } from "@tanstack/vue-table";
 import {
   Dialog,
   DialogContent,
@@ -29,15 +30,25 @@ import { Textarea } from "@/Components/ui/textarea";
 import { toast } from "vue-sonner";
 import { confirmModal } from "@/Components/ui/confirmation-dialog";
 import { Head } from "@inertiajs/vue3";
+import api from "@/lib/axios";
+
+interface Kategori {
+  id: number;
+  nama: string;
+  slug: string;
+  deskripsi?: string;
+  created_at?: Date;
+  updated_at?: Date;
+}
 
 const breadcrumbs = [{ title: "Dashboard", href: "/dashboard" }, { title: "Kategori" }];
 
-const data = ref([]);
-const filteredData = ref([]);
+const data = ref<Kategori[]>([]);
+const filteredData = ref<Kategori[]>([]);
 const isLoading = ref(true);
 const searchQuery = ref("");
 const isDialogOpen = ref(false);
-const editingItem = ref(null);
+const editingItem = ref<Kategori | null>(null);
 
 const formData = reactive({
   nama: "",
@@ -49,9 +60,8 @@ const formData = reactive({
 const fetchKategoriData = async () => {
   isLoading.value = true;
   try {
-    const response = await fetch("/api/kategori");
-    const result = await response.json();
-    data.value = Array.isArray(result) ? result : [];
+    const response = await api.get("/api/kategori");
+    data.value = Array.isArray(response.data) ? response.data : response.data.data || [];
     filteredData.value = data.value;
   } catch (error) {
     toast.error("Gagal memuat data kategori");
@@ -73,19 +83,19 @@ const applySearch = () => {
   );
 };
 
-const generateSlug = (name) => {
+const generateSlug = (name: string) => {
   return name
     .toLowerCase()
     .replace(/[^\w ]+/g, "")
     .replace(/ +/g, "-");
 };
 
-const openDialog = (item = null) => {
+const openDialog = (item: Kategori | null = null) => {
   editingItem.value = item;
   if (item) {
     Object.assign(formData, item);
   } else {
-    Object.keys(formData).forEach((k) => (formData[k] = ""));
+    Object.keys(formData).forEach((k) => (formData[k as keyof typeof formData] = ""));
   }
   isDialogOpen.value = true;
 };
@@ -97,63 +107,78 @@ const saveItem = async () => {
       formData.slug = generateSlug(formData.nama);
     }
 
-    let response;
     if (editingItem.value) {
-      response = await fetch(`/api/kategori/${editingItem.value.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      await api.put(`/api/kategori/${editingItem.value.id}`, formData);
+      toast.success("Kategori berhasil diperbarui");
     } else {
-      response = await fetch("/api/kategori", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      await api.post("/api/kategori", formData);
+      toast.success("Kategori berhasil ditambahkan");
     }
 
-    if (response.ok) {
-      toast.success(
-        editingItem.value
-          ? "Kategori berhasil diperbarui"
-          : "Kategori berhasil ditambahkan"
-      );
-      await fetchKategoriData();
-      applySearch();
-      isDialogOpen.value = false;
-    } else {
-      const error = await response.json();
-      toast.error(error.message || "Gagal menyimpan kategori");
-    }
-  } catch (error) {
-    toast.error("Gagal menyimpan kategori");
+    await fetchKategoriData();
+    applySearch();
+    isDialogOpen.value = false;
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || "Gagal menyimpan kategori";
+    toast.error(errorMessage);
     console.error(error);
   }
 };
 
-const handleDelete = async (item) => {
+const handleDelete = async (item: Kategori) => {
   if (!(await confirmModal("Apakah yakin ingin menghapus kategori ini?", item.nama)))
     return;
+
+  const loadingToast = toast.loading("Menghapus kategori...");
   try {
-    const response = await fetch(`/api/kategori/${item.id}`, {
-      method: "DELETE",
-    });
-    if (response.ok) {
-      toast.success("Kategori berhasil dihapus");
-      await fetchKategoriData();
-      applySearch();
-    } else {
-      toast.error("Gagal menghapus kategori");
-    }
-  } catch (error) {
-    toast.error("Gagal menghapus kategori");
+    await api.delete(`/api/kategori/${item.id}`);
+    toast.success("Kategori berhasil dihapus", { id: loadingToast });
+    await fetchKategoriData();
+    applySearch();
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || "Gagal menghapus kategori";
+    toast.error(errorMessage, { id: loadingToast });
     console.error(error);
+  }
+};
+
+// Bulk action functions
+const bulkDelete = async (selectedRows: Kategori[]) => {
+  if (!selectedRows || selectedRows.length === 0) {
+    toast.error("Tidak ada item yang dipilih");
+    return;
+  }
+
+  const selectedNames = selectedRows.map(row => row.nama).filter(Boolean);
+  const count = selectedRows.length;
+  const confirmMessage = `Apakah yakin ingin menghapus ${count} kategori ini?`;
+
+  const confirmed = await confirmModal(confirmMessage, selectedNames.join(", "));
+  if (!confirmed) return;
+
+  const loadingToast = toast.loading("Menghapus kategori...");
+
+  try {
+    const apiPromises = selectedRows.map(async (kategori) => {
+      return api.delete(`/api/kategori/${kategori.id}`);
+    });
+    await Promise.all(apiPromises);
+
+    await fetchKategoriData();
+    applySearch();
+
+    toast.success(`Kategori berhasil dihapus (${count} item)`, { id: loadingToast });
+  } catch (err: any) {
+    console.error("Gagal melakukan bulk delete:", err);
+    const errorMessage = err.response?.data?.message || "Gagal melakukan bulk delete";
+    toast.error(errorMessage, { id: loadingToast });
+    throw err;
   }
 };
 
 onMounted(fetchKategoriData);
 
-const columns = [
+const columns: ColumnDef<Kategori>[] = [
   {
     id: "nomor",
     header: "No",
@@ -180,7 +205,7 @@ const columns = [
     header: ({ column }) => h(DataTableColumnHeader, { column, title: "Dibuat" }),
     cell: ({ row }) => {
       const date = row.getValue("created_at");
-      return h("div", {}, date ? new Date(date).toLocaleDateString("id-ID") : "-");
+      return h("div", {}, date ? new Date(date as string).toLocaleDateString("id-ID") : "-");
     },
   },
   {
@@ -266,12 +291,12 @@ const columns = [
               :columns="columns"
               :data="filteredData"
               :isLoading="isLoading"
-              :enableBulkActions="false"
+              :enableBulkActions="true"
             >
               <template #toolbar-actions>
                 <Dialog v-model:open="isDialogOpen">
                   <DialogTrigger as-child>
-                    <Button variant="outline" @click="openDialog()" class="gap-2">
+                    <Button @click="openDialog()" class="gap-2">
                       <Plus class="h-4 w-4" />
                       Tambah Kategori
                     </Button>
@@ -311,6 +336,17 @@ const columns = [
                     </div>
                   </DialogContent>
                 </Dialog>
+              </template>
+              <template #bulk-actions="{ executeBulkAction }">
+                <Button
+                  variant="destructive"
+                  @click="() => executeBulkAction(bulkDelete)"
+                  class="w-full sm:w-auto"
+                >
+                  <Trash2 class="h-4 w-4" />
+                  <span class="hidden sm:inline">Hapus Terpilih</span>
+                  <span class="sm:hidden">Hapus</span>
+                </Button>
               </template>
             </DataTable>
           </CardContent>
