@@ -1,5 +1,5 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import DashboardLayout from '@/Layouts/DashboardLayout.vue';
 import { Head } from '@inertiajs/vue3';
 
 const breadcrumbs = [
@@ -10,7 +10,7 @@ const breadcrumbs = [
 <template>
     <Head title="Dashboard" />
 
-    <AuthenticatedLayout :breadcrumbs="breadcrumbs">
+    <DashboardLayout :breadcrumbs="breadcrumbs">
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
                 <div
@@ -22,5 +22,5 @@ const breadcrumbs = [
                 </div>
             </div>
         </div>
-    </AuthenticatedLayout>
+    </DashboardLayout>
 </template>

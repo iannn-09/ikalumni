@@ -21,6 +21,8 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@tailwindcss/vite": "^4.1.12",
+        "@tanstack/vue-table": "^8.21.3",
         "@unovis/ts": "^1.6.1",
         "@unovis/vue": "^1.6.1",
         "@vee-validate/zod": "^4.15.1",
