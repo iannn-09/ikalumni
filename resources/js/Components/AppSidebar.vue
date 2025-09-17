@@ -1,5 +1,5 @@
 <script setup>
-import { Home, User, Settings, LogOut, ChevronUp, User2 } from 'lucide-vue-next'
+import { Home, User, Settings, LogOut, ChevronUp, User2, FileText, Tag } from 'lucide-vue-next'
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +29,16 @@ const items = [
     title: "Dashboard",
     url: "dashboard",
     icon: Home,
+  },
+  {
+    title: "Berita",
+    url: "berita.index",
+    icon: FileText,
+  },
+  {
+    title: "Kategori",
+    url: "kategori.index",
+    icon: Tag,
   },
   {
     title: "Profile",
