@@ -188,9 +188,9 @@ onMounted(() => {
 
   <LandingLayout>
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 py-8">
+    <div class="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
       <!-- Loading State -->
-      <div v-if="isLoading" class="animate-pulse">
+      <div v-if="isLoading" class="animate-pulse max-w-7xl mx-auto">
         <div class="h-8 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-4"></div>
         <div class="h-64 bg-gray-300 dark:bg-gray-600 rounded-xl mb-6"></div>
         <div class="space-y-4">
@@ -201,7 +201,7 @@ onMounted(() => {
       </div>
 
       <!-- Article Content -->
-      <div v-else-if="article" class="grid lg:grid-cols-4 gap-8">
+      <div v-else-if="article" class="max-w-7xl mx-auto grid lg:grid-cols-4 gap-8">
         <!-- Main Article -->
         <article class="lg:col-span-3">
           <!-- Breadcrumb -->
@@ -490,7 +490,7 @@ onMounted(() => {
       </div>
 
       <!-- Error State -->
-      <div v-else class="text-center py-12">
+      <div v-else class="text-center py-12 max-w-7xl mx-auto">
         <svg
           class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4"
           fill="none"

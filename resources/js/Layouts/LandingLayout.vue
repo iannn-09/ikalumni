@@ -12,43 +12,67 @@ defineProps({
     default: true,
   },
 });
+
+// Function to scroll to news section
+const scrollToBerita = () => {
+  const newsSection = document.querySelector('.news-section');
+  if (newsSection) {
+    newsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  } else {
+    // If not on homepage, navigate to homepage first
+    window.location.href = '/#berita';
+  }
+};
+
+// Function to scroll to footer menu
+const scrollToNews = () => {
+  const newsSection = document.querySelector('.news-section');
+  if (newsSection) {
+    newsSection.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  }
+};
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+  <!-- Tambahkan overflow-x-hidden di container utama -->
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-x-hidden">
     <!-- Navigation Header -->
-    <header class="relative z-10">
-      <nav class="flex items-center justify-between px-6 py-4 lg:px-8">
+    <header class="relative z-10 w-full">
+      <nav class="flex items-center justify-between px-6 py-4 lg:px-8 max-w-full">
         <!-- Logo -->
-        <Link href="/" class="flex items-center gap-3">
-          <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <span class="text-white font-bold text-lg">SV</span>
-          </div>
-          <div class="hidden sm:block">
-            <h1 class="text-lg font-bold text-gray-800 dark:text-white">SEKOLAH VOKASI</h1>
-            <p class="text-sm text-gray-600 dark:text-gray-300">UNIVERSITAS SEBELAS MARET</p>
-          </div>
+        <Link href="/" class="flex items-center gap-3 flex-shrink-0">
+              <img
+                src="/storage/logo/logo-sv-putih.png"
+                alt="Sekolah Vokasi UNS"
+                class="h-12 max-w-full"
+              />
         </Link>
 
         <!-- Navigation Menu -->
-        <div class="hidden md:flex items-center space-x-8">
-          <Link href="/" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+        <div class="hidden md:flex items-center space-x-8 flex-shrink-0">
+          <Link href="/" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap">
             Beranda
           </Link>
-          <a href="#about" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
-            Tentang
-          </a>
-          <a href="#news" class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors">
+          <button
+            @click="scrollToBerita"
+            class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
+          >
             Berita
-          </a>
+          </button>
         </div>
 
         <!-- Auth Links -->
-        <div v-if="canLogin" class="flex items-center space-x-4">
+        <div v-if="canLogin" class="flex items-center space-x-4 flex-shrink-0">
           <Link
             v-if="$page.props.auth?.user"
             :href="route('dashboard')"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
           >
             Dashboard
           </Link>
@@ -56,7 +80,7 @@ defineProps({
           <template v-else>
             <Link
               :href="route('login')"
-              class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+              class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
             >
               Log in
             </Link>
@@ -64,7 +88,7 @@ defineProps({
             <Link
               v-if="canRegister"
               :href="route('register')"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
             >
               Register
             </Link>
@@ -74,23 +98,21 @@ defineProps({
     </header>
 
     <!-- Main Content -->
-    <main class="relative">
+    <main class="relative w-full overflow-x-hidden">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 dark:bg-black text-white py-12">
-      <div class="container mx-auto px-6">
-        <div class="grid md:grid-cols-4 gap-8">
-          <div class="col-span-2">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span class="text-white font-bold">SV</span>
-              </div>
-              <div>
-                <h3 class="font-bold">Sekolah Vokasi UNS</h3>
-                <p class="text-sm text-gray-400">Keluarga Alumni</p>
-              </div>
+    <footer class="bg-gray-900 dark:bg-black text-white py-12 w-full overflow-x-hidden">
+      <div class="container mx-auto px-6 max-w-full">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="md:col-span-2">
+            <div class="mb-4">
+              <img
+                src="/storage/logo/logo-sv-putih.png"
+                alt="Sekolah Vokasi UNS"
+                class="h-12 max-w-full"
+              />
             </div>
             <p class="text-gray-400 mb-4">
               Membangun jejaring alumni yang kuat untuk kemajuan bersama.
@@ -118,19 +140,24 @@ defineProps({
             <h4 class="font-semibold mb-4">Menu</h4>
             <ul class="space-y-2 text-gray-400">
               <li><Link href="/" class="hover:text-white transition-colors">Beranda</Link></li>
-              <li><a href="#about" class="hover:text-white transition-colors">Tentang</a></li>
-              <li><a href="#news" class="hover:text-white transition-colors">Berita</a></li>
-              <li><a href="#" class="hover:text-white transition-colors">Karir</a></li>
+              <li>
+                <button
+                  @click="scrollToNews"
+                  class="hover:text-white transition-colors text-left"
+                >
+                  Berita
+                </button>
+              </li>
             </ul>
           </div>
 
           <div>
             <h4 class="font-semibold mb-4">Kontak</h4>
             <ul class="space-y-2 text-gray-400">
-              <li>Jl. Ahmad Yani 200A</li>
-              <li>Surakarta, Jawa Tengah</li>
-              <li>alumni@vokasi.uns.ac.id</li>
-              <li>(0271) 647-481</li>
+              <li>Jl. Kolonel Sutarto No.150K</li>
+              <li>Jebres, Kec. Jebres</li>
+              <li>Kota Surakarta, Jawa Tengah</li>
+              <li>(0271) 662622</li>
             </ul>
           </div>
         </div>
@@ -142,3 +169,15 @@ defineProps({
     </footer>
   </div>
 </template>
+
+<style scoped>
+/* Tambahkan CSS untuk memastikan tidak ada horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+</style>
