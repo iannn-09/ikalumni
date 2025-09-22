@@ -29,7 +29,7 @@ defineProps({
       <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         <!-- Simple Header with Toggle and Breadcrumb -->
         <header class="border-b bg-white dark:bg-gray-800">
-          <div class="flex h-16 items-center gap-4 px-6">
+          <div class="flex h-12 items-center gap-4 px-6">
             <!-- Trigger untuk toggle sidebar -->
             <SidebarTrigger />
 

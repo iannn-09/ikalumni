@@ -1,5 +1,14 @@
 <script setup>
-import { Home, User, Settings, LogOut, ChevronUp, User2, FileText, Tag } from 'lucide-vue-next'
+import {
+  Home,
+  User,
+  Settings,
+  LogOut,
+  ChevronUp,
+  User2,
+  FileText,
+  Tag,
+} from "lucide-vue-next";
 import {
   Sidebar,
   SidebarContent,
@@ -11,17 +20,19 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/Components/ui/sidebar'
+  SidebarSeparator,
+} from "@/Components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/Components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar'
-import { Link, usePage } from '@inertiajs/vue3'
+} from "@/Components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar";
+import ThemeToggle from "@/Components/ThemeToggle.vue";
+import { Link, usePage } from "@inertiajs/vue3";
 
-const page = usePage()
+const page = usePage();
 
 // Navigation items
 const items = [
@@ -40,36 +51,38 @@ const items = [
     url: "kategori.index",
     icon: Tag,
   },
-  {
-    title: "Profile",
-    url: "profile.edit",
-    icon: User,
-  },
-]
+];
 
 // Get user initials for avatar fallback
 const getUserInitials = (name) => {
-  return name?.split(' ').map(word => word[0]).join('').toUpperCase() || 'U'
-}
+  return (
+    name
+      ?.split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase() || "U"
+  );
+};
 </script>
 
 <template>
-  <Sidebar collapsible="icon" >
+  <Sidebar collapsible="icon">
     <SidebarHeader class="border-b border-sidebar-border">
-    <div class="flex items-center gap-2 px-2 py-2">
+      <div class="flex items-center gap-2 px-2 py-2">
         <!-- Logo kecil (selalu tampil) -->
-        <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <span class="text-sm font-bold">IK</span>
+        <div
+          class="flex w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+        >
+          <span class="text-sm font-bold">IK</span>
         </div>
 
         <!-- Teks hanya tampil kalau sidebar tidak collapse -->
         <div class="flex flex-col group-data-[collapsible=icon]:hidden">
-        <span class="text-sm font-semibold">IK Alumni</span>
-        <span class="text-xs text-sidebar-foreground/70">Dashboard</span>
+          <span class="text-sm font-semibold">IK Alumni</span>
+          <span class="text-xs text-sidebar-foreground/70">Dashboard</span>
         </div>
-    </div>
+      </div>
     </SidebarHeader>
-
 
     <SidebarContent>
       <SidebarGroup>
@@ -77,14 +90,26 @@ const getUserInitials = (name) => {
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
-              <SidebarMenuButton
-                :as-child="true"
-                :is-active="route().current(item.url)"
-              >
+              <SidebarMenuButton :as-child="true" :is-active="route().current(item.url)">
                 <Link :href="route(item.url)" class="flex items-center gap-2">
                   <component :is="item.icon" class="h-4 w-4" />
                   <span>{{ item.title }}</span>
                 </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+
+      <SidebarSeparator />
+
+      <SidebarGroup>
+        <SidebarGroupLabel>Preferences</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton as-child class="w-full">
+                <ThemeToggle />
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -102,13 +127,18 @@ const getUserInitials = (name) => {
                 class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar class="h-8 w-8 rounded-lg">
-                  <AvatarImage :src="page.props.auth.user.avatar" :alt="page.props.auth.user.name" />
+                  <AvatarImage
+                    :src="page.props.auth.user.avatar"
+                    :alt="page.props.auth.user.name"
+                  />
                   <AvatarFallback class="rounded-lg">
                     {{ getUserInitials(page.props.auth.user.name) }}
                   </AvatarFallback>
                 </Avatar>
                 <div class="grid flex-1 text-left text-sm leading-tight">
-                  <span class="truncate font-semibold">{{ page.props.auth.user.name }}</span>
+                  <span class="truncate font-semibold">{{
+                    page.props.auth.user.name
+                  }}</span>
                   <span class="truncate text-xs">{{ page.props.auth.user.email }}</span>
                 </div>
                 <ChevronUp class="ml-auto size-4" />
@@ -127,7 +157,12 @@ const getUserInitials = (name) => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem as-child>
-                <Link :href="route('logout')" method="post" as="button" class="flex items-center gap-2 w-full">
+                <Link
+                  :href="route('logout')"
+                  method="post"
+                  as="button"
+                  class="flex items-center gap-2 w-full"
+                >
                   <LogOut class="h-4 w-4" />
                   <span>Log out</span>
                 </Link>
