@@ -27,8 +27,14 @@ class BeritaController extends Controller
      */
     public function index()
     {
-        $berita = Berita::with(['kategori', 'user'])->get();
-        return response()->json($berita);
+        $berita = Berita::with(['kategori', 'user'])
+            ->orderBy('published_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($berita, 200, [
+            'Content-Type' => 'application/json',
+        ]);
     }
 
     /**
