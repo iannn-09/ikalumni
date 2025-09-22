@@ -104,20 +104,20 @@
                 }
             }
         },
-        "/api/berita/{id}": {
+        "/api/berita/{slug}": {
             "get": {
                 "tags": [
                     "Berita"
                 ],
                 "summary": "Detail berita",
-                "operationId": "84fd0ad3800157592ba507f76d7733ed",
+                "operationId": "f38ca97a6123e40b0d75d5c85c6d3e75",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "slug",
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -136,7 +136,9 @@
                         "description": "Not found"
                     }
                 }
-            },
+            }
+        },
+        "/api/berita/{id}": {
             "put": {
                 "tags": [
                     "Berita"

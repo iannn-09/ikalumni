@@ -18,9 +18,9 @@ Route::get('/', function () {
 });
 
 // Public route untuk detail berita (bisa diakses tanpa login)
-Route::get('/berita/{id}', function ($id) {
+Route::get('/berita/{slug}', function ($slug) {
     return Inertia::render('Landing/DetailBeritaView', [
-        'id' => $id
+        'slug' => $slug
     ]);
 })->name('berita.detail');
 

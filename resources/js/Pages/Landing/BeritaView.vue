@@ -12,6 +12,7 @@ const getSampleNews = () => [
     {
         id: 1,
         judul: 'Reuni Akbar Alumni Sekolah Vokasi UNS 2025',
+        slug: 'reuni-akbar-alumni-sekolah-vokasi-uns-2025',
         content: 'Bergabunglah dalam acara reuni akbar yang akan mempertemukan alumni dari berbagai angkatan. Acara ini akan dilaksanakan di kampus Sekolah Vokasi UNS dengan berbagai kegiatan menarik.',
         thumbnail: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&h=250&fit=crop&crop=center',
         kategori: { nama: 'Acara' },
@@ -20,6 +21,7 @@ const getSampleNews = () => [
     {
         id: 2,
         judul: 'Job Fair Alumni: Peluang Karir Terbuka Lebar',
+        slug: 'job-fair-alumni-peluang-karir-terbuka-lebar',
         content: 'Temukan peluang karir impian Anda di Job Fair khusus alumni. Lebih dari 50 perusahaan terkemuka akan hadir untuk membuka kesempatan kerja di berbagai bidang.',
         thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&crop=center',
         kategori: { nama: 'Karir' },
@@ -28,6 +30,7 @@ const getSampleNews = () => [
     {
         id: 3,
         judul: 'Workshop Digital Marketing untuk Alumni',
+        slug: 'workshop-digital-marketing-untuk-alumni',
         content: 'Tingkatkan skill digital marketing Anda melalui workshop intensif yang dihadiri oleh praktisi berpengalaman. Cocok untuk alumni yang ingin mengembangkan bisnis.',
         thumbnail: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400&h=250&fit=crop&crop=center',
         kategori: { nama: 'Workshop' },
@@ -151,7 +154,7 @@ onMounted(() => {
                             {{ truncateText((item.content || '').replace(/<[^>]*>/g, '')) }}
                         </p>
                         <Link
-                            :href="'/berita/' + item.id"
+                            :href="'/berita/' + (item.slug || item.id)"
                             class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm group"
                         >
                             Baca Selengkapnya

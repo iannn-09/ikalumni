@@ -82,14 +82,14 @@ class BeritaController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/berita/{id}",
+     *     path="/api/berita/{slug}",
      *     summary="Detail berita",
      *     tags={"Berita"},
      *     @OA\Parameter(
-     *         name="id",
+     *         name="slug",
      *         in="path",
      *         required=true,
-     *         @OA\Schema(type="integer")
+     *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -99,9 +99,12 @@ class BeritaController extends Controller
      *     @OA\Response(response=404, description="Not found")
      * )
      */
-    public function show($id)
+    public function show($slug)
     {
-        $berita = Berita::with(['kategori', 'user'])->findOrFail($id);
+        $berita = Berita::with(['kategori', 'user'])
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->firstOrFail();
         return response()->json($berita);
     }
 

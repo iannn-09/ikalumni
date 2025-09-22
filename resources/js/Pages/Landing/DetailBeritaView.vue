@@ -5,8 +5,8 @@ import LandingLayout from "@/Layouts/LandingLayout.vue";
 import axios from "axios";
 
 const props = defineProps({
-  id: {
-    type: [String, Number],
+  slug: {
+    type: String,
     required: true,
   },
 });
@@ -14,19 +14,21 @@ const props = defineProps({
 // News data state
 const article = ref(null);
 const relatedNews = ref([]);
+const recommendedNews = ref([]);
 const isLoading = ref(true);
 
 // Fetch article details from API
 const fetchArticle = async () => {
   try {
     isLoading.value = true;
-    const response = await axios.get(`/api/berita/${props.id}`);
+    const response = await axios.get(`/api/berita/${props.slug}`);
     article.value = response.data;
 
-    // Fetch related news (same category, excluding current article)
+    // Fetch related news and recommendations
     if (response.data.kategori_id) {
       await fetchRelatedNews(response.data.kategori_id);
     }
+    await fetchRecommendedNews();
   } catch (error) {
     console.error("Error fetching article:", error);
     // Fallback to sample data if API fails
@@ -45,12 +47,31 @@ const fetchRelatedNews = async (categoryId) => {
         (item) =>
           item.status === "published" &&
           item.kategori_id === categoryId &&
-          item.id !== parseInt(props.id)
+          item.slug !== props.slug
       )
       .slice(0, 3);
   } catch (error) {
     console.error("Error fetching related news:", error);
     relatedNews.value = [];
+  }
+};
+
+// Fetch recommended news (latest news excluding current article)
+const fetchRecommendedNews = async () => {
+  try {
+    const response = await axios.get("/api/berita");
+    recommendedNews.value = response.data
+      .filter(
+        (item) =>
+          item.status === "published" &&
+          item.slug !== props.slug
+      )
+      .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at))
+      .slice(0, 5);
+  } catch (error) {
+    console.error("Error fetching recommended news:", error);
+    // Fallback to sample recommendations
+    recommendedNews.value = getSampleRecommendations();
   }
 };
 
@@ -92,6 +113,38 @@ const getSampleArticle = () => ({
   published_at: "2025-01-15T10:00:00.000000Z",
   created_at: "2025-01-15T10:00:00.000000Z",
 });
+
+// Sample recommendations data as fallback
+const getSampleRecommendations = () => [
+  {
+    id: 2,
+    judul: "Workshop Digital Marketing untuk Alumni",
+    thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&h=80&fit=crop&crop=center",
+    kategori: { nama: "Workshop", id: 2 },
+    published_at: "2025-01-14T10:00:00.000000Z",
+  },
+  {
+    id: 3,
+    judul: "Lowongan Kerja Terbaru untuk Alumni",
+    thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=80&fit=crop&crop=center",
+    kategori: { nama: "Karir", id: 3 },
+    published_at: "2025-01-13T10:00:00.000000Z",
+  },
+  {
+    id: 4,
+    judul: "Beasiswa S2 untuk Alumni Berprestasi",
+    thumbnail: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=100&h=80&fit=crop&crop=center",
+    kategori: { nama: "Beasiswa", id: 4 },
+    published_at: "2025-01-12T10:00:00.000000Z",
+  },
+  {
+    id: 5,
+    judul: "Pengumuman Jadwal Kuliah Tamu",
+    thumbnail: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=100&h=80&fit=crop&crop=center",
+    kategori: { nama: "Pengumuman", id: 5 },
+    published_at: "2025-01-11T10:00:00.000000Z",
+  },
+];
 
 // Format date function
 const formatDate = (dateString) => {
@@ -327,18 +380,21 @@ onMounted(() => {
         </article>
 
         <!-- Sidebar -->
-        <aside class="lg:col-span-1">
+        <aside class="lg:col-span-1 space-y-6">
           <!-- Related News -->
           <div
             v-if="relatedNews.length > 0"
             class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg"
           >
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
               Berita Terkait
             </h3>
             <div class="space-y-4">
               <article v-for="item in relatedNews" :key="item.id" class="group">
-                <Link :href="`/berita/${item.id}`" class="block">
+                <Link :href="`/berita/${item.slug}`" class="block">
                   <div class="flex gap-3">
                     <img
                       :src="
@@ -349,6 +405,14 @@ onMounted(() => {
                       class="w-20 h-16 object-cover rounded-lg"
                     />
                     <div class="flex-1">
+                      <span
+                        :class="[
+                          'inline-block px-2 py-1 rounded text-xs font-medium text-white mb-1',
+                          getCategoryColor(item.kategori?.nama),
+                        ]"
+                      >
+                        {{ item.kategori?.nama || "Berita" }}
+                      </span>
                       <h4
                         class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2 transition-colors"
                       >
@@ -364,8 +428,57 @@ onMounted(() => {
             </div>
           </div>
 
+          <!-- Recommended News -->
+          <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+              </svg>
+              Rekomendasi Berita
+            </h3>
+            <div class="space-y-4">
+              <article v-for="(item, index) in recommendedNews" :key="item.id" class="group">
+                <Link :href="`/berita/${item.slug}`" class="block">
+                  <div class="flex gap-3">
+                    <div class="relative">
+                      <img
+                        :src="
+                          item.thumbnail ||
+                          'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=100&h=80&fit=crop&crop=center'
+                        "
+                        :alt="item.judul"
+                        class="w-20 h-16 object-cover rounded-lg"
+                      />
+                      <div class="absolute -top-2 -left-2 bg-green-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                        {{ index + 1 }}
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <span
+                        :class="[
+                          'inline-block px-2 py-1 rounded text-xs font-medium text-white mb-1',
+                          getCategoryColor(item.kategori?.nama),
+                        ]"
+                      >
+                        {{ item.kategori?.nama || "Berita" }}
+                      </span>
+                      <h4
+                        class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 line-clamp-2 transition-colors"
+                      >
+                        {{ item.judul }}
+                      </h4>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {{ formatDate(item.published_at || item.created_at) }}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              </article>
+            </div>
+          </div>
+
           <!-- Back to News -->
-          <div class="mt-6">
+          <div>
             <Link
               href="/berita"
               class="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors"
