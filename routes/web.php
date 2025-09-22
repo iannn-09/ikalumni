@@ -15,7 +15,7 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
+})->name('landing');
 
 // Public route untuk detail berita (bisa diakses tanpa login)
 Route::get('/berita/{slug}', function ($slug) {

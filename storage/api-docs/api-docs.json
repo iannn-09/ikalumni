@@ -244,6 +244,76 @@
                 }
             }
         },
+        "/api/dashboard/stats": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get dashboard statistics",
+                "operationId": "594db3e57418c652925acbaa7adab958",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "totalNews": {
+                                            "type": "integer"
+                                        },
+                                        "totalUsers": {
+                                            "type": "integer"
+                                        },
+                                        "totalAlumni": {
+                                            "type": "integer"
+                                        },
+                                        "totalCategories": {
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/dashboard/news-by-category": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get news count by category for chart",
+                "operationId": "b5687863539c3623063b0664a301cda9",
+                "responses": {
+                    "200": {
+                        "description": "News count by category",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "value": {
+                                                "type": "integer"
+                                            },
+                                            "color": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/kategori": {
             "get": {
                 "tags": [
@@ -771,6 +841,10 @@
         {
             "name": "Berita",
             "description": "Manajemen data berita"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Dashboard statistics"
         },
         {
             "name": "Kategori",

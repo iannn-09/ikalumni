@@ -68,20 +68,22 @@ const getUserInitials = (name) => {
 <template>
   <Sidebar collapsible="icon">
     <SidebarHeader class="border-b border-sidebar-border">
-      <div class="flex items-center gap-2 px-2 py-2">
-        <!-- Logo kecil (selalu tampil) -->
-        <div
-          class="flex w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground"
-        >
-          <span class="text-sm font-bold">IK</span>
-        </div>
+      <Link :href="route('landing')" class="block">
+        <div class="flex items-center gap-2 px-2 py-2">
+          <!-- Logo kecil (selalu tampil) -->
+          <div
+            class="flex w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground"
+          >
+            <span class="text-sm font-bold">IK</span>
+          </div>
 
-        <!-- Teks hanya tampil kalau sidebar tidak collapse -->
-        <div class="flex flex-col group-data-[collapsible=icon]:hidden">
-          <span class="text-sm font-semibold">IK Alumni</span>
-          <span class="text-xs text-sidebar-foreground/70">Dashboard</span>
+          <!-- Teks hanya tampil kalau sidebar tidak collapse -->
+          <div class="flex flex-col group-data-[collapsible=icon]:hidden">
+            <span class="text-sm font-semibold">IK Alumni</span>
+            <span class="text-xs text-sidebar-foreground/70">Dashboard</span>
+          </div>
         </div>
-      </div>
+      </Link>
     </SidebarHeader>
 
     <SidebarContent>
@@ -150,12 +152,6 @@ const getUserInitials = (name) => {
               align="end"
               :side-offset="4"
             >
-              <DropdownMenuItem as-child>
-                <Link :href="route('profile.edit')" class="flex items-center gap-2">
-                  <User2 class="h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
               <DropdownMenuItem as-child>
                 <Link
                   :href="route('logout')"
