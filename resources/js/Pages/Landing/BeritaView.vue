@@ -184,22 +184,22 @@ onMounted(() => {
 </script>
 
 <template>
-    <section class="py-20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 news-section">
-        <div class="container mx-auto px-6">
+    <section class="py-20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 news-section transition-all duration-300 ease-in-out">
+        <div class="container mx-auto px-6 transition-all duration-300 ease-in-out">
             <!-- Section Header -->
-            <div class="text-center mb-16">
-                <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <div class="text-center mb-16 transition-all duration-500 ease-in-out">
+                <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300 ease-in-out">
                     Berita & Informasi Terkini
                 </h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto transition-colors duration-300 ease-in-out">
                     Tetap update dengan berita terbaru dari komunitas alumni Sekolah Vokasi UNS
                 </p>
             </div>
 
             <!-- Loading State -->
             <div v-if="isLoadingNews" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                <div v-for="n in itemsPerPage" :key="n" class="animate-pulse">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden">
+                <div v-for="n in itemsPerPage" :key="n" class="animate-pulse transition-all duration-300 ease-in-out">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="aspect-video bg-gray-300 dark:bg-gray-600"></div>
                         <div class="p-6">
                             <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24 mb-3"></div>
@@ -217,38 +217,38 @@ onMounted(() => {
                 <article
                     v-for="item in news"
                     :key="item.id"
-                    class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+                    class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 ease-in-out overflow-hidden group transform hover:-translate-y-2"
                 >
                     <div class="aspect-video relative overflow-hidden">
                         <img
                             :src="item.thumbnail || `https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&h=250&fit=crop&crop=center`"
                             :alt="item.judul || 'News image'"
-                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
                             @error="$event.target.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&h=250&fit=crop&crop=center'"
                         />
-                        <div :class="['absolute top-4 left-4 text-white px-3 py-1 rounded-full text-sm font-medium', getCategoryColor(item.kategori?.nama)]">
+                        <div :class="['absolute top-4 left-4 text-white px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ease-in-out', getCategoryColor(item.kategori?.nama)]">
                             {{ item.kategori?.nama || 'Berita' }}
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                    <div class="p-6 transition-all duration-300 ease-in-out">
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3 transition-colors duration-300 ease-in-out">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                             <span>{{ formatDate(item.published_at || item.created_at) }}</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 transition-colors duration-300 ease-in-out">
                             {{ item.judul || 'Untitled' }}
                         </h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4">
+                        <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4 transition-colors duration-300 ease-in-out">
                             {{ truncateText((item.content || '').replace(/<[^>]*>/g, '')) }}
                         </p>
                         <Link
                             :href="'/berita/' + (item.slug || item.id)"
-                            class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm group"
+                            class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm group transition-all duration-300 ease-in-out hover:translate-x-1"
                         >
                             Baca Selengkapnya
-                            <svg class="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 ml-1 group-hover:translate-x-2 transition-transform duration-300 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
                         </Link>
@@ -266,18 +266,18 @@ onMounted(() => {
             </div>
 
             <!-- Pagination -->
-            <div v-if="!isLoadingNews && totalPages > 1" class="flex flex-col items-center space-y-4">
+            <div v-if="!isLoadingNews && totalPages > 1" class="flex flex-col items-center space-y-4 transition-all duration-300 ease-in-out">
 
                 <!-- Pagination Controls -->
-                <nav class="flex items-center space-x-2" aria-label="Pagination">
+                <nav class="flex items-center space-x-2 transition-all duration-300 ease-in-out" aria-label="Pagination">
                     <!-- Previous Button -->
                     <button
                         @click="prevPage"
                         :disabled="!hasPrevPage"
                         :class="[
-                            'flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            'flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105',
                             hasPrevPage
-                                ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
+                                ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:shadow-lg'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         ]"
                     >
@@ -332,7 +332,7 @@ onMounted(() => {
                         @click="nextPage"
                         :disabled="!hasNextPage"
                         :class="[
-                            'flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                            'flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out',
                             hasNextPage
                                 ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
@@ -348,3 +348,41 @@ onMounted(() => {
         </div>
     </section>
 </template>
+
+<style scoped>
+/* Enhanced animations and transitions */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.news-section {
+  animation: slide-up 0.8s ease-out;
+}
+
+/* Smooth card hover effects */
+article:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+/* Enhanced button transitions */
+button, .bg-white, .bg-gray-800 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Text and color transitions */
+h2, h3, p, span, div {
+  transition: color 0.3s ease-in-out;
+}
+
+/* Background transitions */
+.bg-gradient-to-r {
+  transition: background 0.3s ease-in-out;
+}
+</style>

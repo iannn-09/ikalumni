@@ -100,6 +100,31 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
+  /* Enhanced scrollbar for light theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  /* Selection colors for light theme */
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
+    color: hsl(var(--foreground));
+  }
+
   /* Enhanced scrollbar for dark theme */
   .dark ::-webkit-scrollbar {
     width: 6px;

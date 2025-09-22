@@ -1,6 +1,7 @@
 <script setup>
 import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import { Link } from "@inertiajs/vue3";
+import { ref, onMounted } from "vue";
 
 defineProps({
   canLogin: {
@@ -12,6 +13,45 @@ defineProps({
     default: true,
   },
 });
+
+// Theme management
+const isDark = ref(false);
+
+// Initialize theme on mount
+onMounted(() => {
+  // Check for saved theme preference or default to system preference
+  const savedTheme = localStorage.getItem('theme');
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+    isDark.value = true;
+    document.documentElement.classList.add('dark');
+  } else {
+    isDark.value = false;
+    document.documentElement.classList.remove('dark');
+  }
+});
+
+// Toggle theme function with smooth transition
+const toggleTheme = () => {
+  // Add transition class to html element
+  document.documentElement.classList.add('theme-transition');
+  
+  isDark.value = !isDark.value;
+  
+  if (isDark.value) {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
+  }
+  
+  // Remove transition class after animation completes
+  setTimeout(() => {
+    document.documentElement.classList.remove('theme-transition');
+  }, 300);
+};
 
 // Function to scroll to news section
 const scrollToBerita = () => {
@@ -47,11 +87,11 @@ const scrollToNews = () => {
       <nav class="flex items-center justify-between px-6 py-4 lg:px-8 max-w-full">
         <!-- Logo -->
         <Link href="/" class="flex items-center gap-3 flex-shrink-0">
-              <img
-                src="/storage/logo/logo-sv-putih.png"
-                alt="Sekolah Vokasi UNS"
-                class="h-12 max-w-full"
-              />
+          <img
+            src="/storage/logo/bear.jpeg"
+            alt="Sekolah Vokasi UNS"
+            class="h-12 max-w-full"
+          />
         </Link>
 
         <!-- Navigation Menu -->
@@ -67,32 +107,76 @@ const scrollToNews = () => {
           </button>
         </div>
 
-        <!-- Auth Links -->
-        <div v-if="canLogin" class="flex items-center space-x-4 flex-shrink-0">
-          <Link
-            v-if="$page.props.auth?.user"
-            :href="route('dashboard')"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+        <!-- Right Side: Theme Toggle + Auth Links -->
+        <div class="flex items-center space-x-4 flex-shrink-0">
+          <!-- Theme Toggle Button -->
+          <button
+            @click="toggleTheme"
+            class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300 ease-in-out transform hover:scale-105"
+            :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
           >
-            Dashboard
-          </Link>
-
-          <template v-else>
-            <Link
-              :href="route('login')"
-              class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
+            <!-- Sun Icon (Light Mode) -->
+            <svg 
+              v-if="isDark" 
+              class="w-5 h-5 text-yellow-500 transition-all duration-300 ease-in-out transform" 
+              :class="{ 'rotate-180 scale-110': !isDark }"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              Log in
-            </Link>
+              <path 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+              />
+            </svg>
+            
+            <!-- Moon Icon (Dark Mode) -->
+            <svg 
+              v-else 
+              class="w-5 h-5 text-gray-700 transition-all duration-300 ease-in-out transform" 
+              :class="{ 'rotate-12 scale-110': isDark }"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                stroke-linecap="round" 
+                stroke-linejoin="round" 
+                stroke-width="2" 
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+              />
+            </svg>
+          </button>
 
+          <!-- Auth Links -->
+          <div v-if="canLogin" class="flex items-center space-x-4">
             <Link
-              v-if="canRegister"
-              :href="route('register')"
+              v-if="$page.props.auth?.user"
+              :href="route('dashboard')"
               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
             >
-              Register
+              Dashboard
             </Link>
-          </template>
+
+            <template v-else>
+              <Link
+                :href="route('login')"
+                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
+              >
+                Log in
+              </Link>
+
+              <Link
+                v-if="canRegister"
+                :href="route('register')"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+              >
+                Register
+              </Link>
+            </template>
+          </div>
         </div>
       </nav>
     </header>
@@ -179,5 +263,69 @@ html, body {
 
 * {
   box-sizing: border-box;
+}
+
+/* Global theme transition styles */
+:global(.theme-transition),
+:global(.theme-transition *),
+:global(.theme-transition *:before),
+:global(.theme-transition *:after) {
+  transition: background-color 0.3s ease-in-out, 
+              border-color 0.3s ease-in-out, 
+              color 0.3s ease-in-out,
+              fill 0.3s ease-in-out,
+              stroke 0.3s ease-in-out,
+              opacity 0.3s ease-in-out,
+              box-shadow 0.3s ease-in-out,
+              transform 0.3s ease-in-out !important;
+}
+
+/* Smooth transitions for theme toggle button */
+.theme-toggle-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-button:hover {
+  transform: scale(1.05);
+}
+
+/* Icon rotation animations */
+.theme-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-icon.rotate-in {
+  transform: rotate(180deg) scale(1.1);
+}
+
+.theme-icon.rotate-out {
+  transform: rotate(-180deg) scale(0.9);
+}
+
+/* Enhanced CSS for better transitions */
+* {
+  transition: background-color 0.2s ease-in-out, 
+              border-color 0.2s ease-in-out, 
+              color 0.2s ease-in-out;
+}
+
+/* Ensure smooth background transitions */
+.bg-gradient-to-br {
+  transition: background 0.3s ease-in-out;
+}
+
+/* Smooth shadow transitions */
+.shadow-lg, .shadow-xl {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Text color transitions */
+.text-gray-700, .text-gray-300, .text-gray-900, .text-white {
+  transition: color 0.2s ease-in-out;
+}
+
+/* Background color transitions */
+.bg-white, .bg-gray-800, .bg-gray-900, .bg-black {
+  transition: background-color 0.2s ease-in-out;
 }
 </style>
