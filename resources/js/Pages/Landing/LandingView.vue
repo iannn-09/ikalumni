@@ -1,5 +1,6 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
+import { Button } from '@/Components/ui/button';
 import LandingLayout from '@/Layouts/LandingLayout.vue';
 import BeritaView from '@/Pages/Landing/BeritaView.vue';
 
@@ -38,25 +39,31 @@ defineProps({
                         </p>
                     </div>
 
-                    <!-- CTA Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <Link
-                            v-if="!$page.props.auth.user"
-                            :href="route('register')"
-                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                    <!-- CTA Buttons - Only show if user is logged in -->
+                    <div v-if="$page.props.auth?.user" class="flex flex-col sm:flex-row gap-4">
+                        <Button
+                            as-child
+                            size="lg"
+                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                         >
-                            Bergabung Sekarang
-                        </Link>
-
-                        <Link
-                            v-if="$page.props.auth.user"
-                            :href="route('dashboard')"
-                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-4 rounded-xl font-semibold text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-                        >
-                            Ke Dashboard
-                        </Link>
+                            <Link :href="route('dashboard')">
+                                Ke Dashboard
+                            </Link>
+                        </Button>
                     </div>
 
+                    <!-- Login prompt for guests -->
+                    <div v-else class="flex flex-col sm:flex-row gap-4">
+                        <Button
+                            as-child
+                            size="lg"
+                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                        >
+                            <Link :href="route('login')">
+                                Masuk ke Akun
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 <!-- Right Content - Illustration -->

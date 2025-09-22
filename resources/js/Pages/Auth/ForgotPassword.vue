@@ -88,7 +88,7 @@ const submit = () => {
                 </form>
             </div>
 
-            <!-- Footer -->
+            <!-- Footer - Register link removed -->
             <div class="text-center">
                 <p class="text-sm text-muted-foreground">
                     Remember your password?

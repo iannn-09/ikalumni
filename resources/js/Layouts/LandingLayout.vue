@@ -1,6 +1,7 @@
 <script setup>
 import ApplicationLogo from "@/Components/ApplicationLogo.vue";
 import { Link } from "@inertiajs/vue3";
+import { Button } from "@/Components/ui/button";
 import { ref, onMounted } from "vue";
 
 defineProps({
@@ -10,7 +11,7 @@ defineProps({
   },
   canRegister: {
     type: Boolean,
-    default: true,
+    default: false, // Disabled registration
   },
 });
 
@@ -22,7 +23,7 @@ onMounted(() => {
   // Check for saved theme preference or default to system preference
   const savedTheme = localStorage.getItem('theme');
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
+
   if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
     isDark.value = true;
     document.documentElement.classList.add('dark');
@@ -36,9 +37,9 @@ onMounted(() => {
 const toggleTheme = () => {
   // Add transition class to html element
   document.documentElement.classList.add('theme-transition');
-  
+
   isDark.value = !isDark.value;
-  
+
   if (isDark.value) {
     document.documentElement.classList.add('dark');
     localStorage.setItem('theme', 'dark');
@@ -46,7 +47,7 @@ const toggleTheme = () => {
     document.documentElement.classList.remove('dark');
     localStorage.setItem('theme', 'light');
   }
-  
+
   // Remove transition class after animation completes
   setTimeout(() => {
     document.documentElement.classList.remove('theme-transition');
@@ -116,35 +117,35 @@ const scrollToNews = () => {
             :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
           >
             <!-- Sun Icon (Light Mode) -->
-            <svg 
-              v-if="isDark" 
-              class="w-5 h-5 text-yellow-500 transition-all duration-300 ease-in-out transform" 
+            <svg
+              v-if="isDark"
+              class="w-5 h-5 text-yellow-500 transition-all duration-300 ease-in-out transform"
               :class="{ 'rotate-180 scale-110': !isDark }"
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
               />
             </svg>
-            
+
             <!-- Moon Icon (Dark Mode) -->
-            <svg 
-              v-else 
-              class="w-5 h-5 text-gray-700 transition-all duration-300 ease-in-out transform" 
+            <svg
+              v-else
+              class="w-5 h-5 text-gray-700 transition-all duration-300 ease-in-out transform"
               :class="{ 'rotate-12 scale-110': isDark }"
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path 
-                stroke-linecap="round" 
-                stroke-linejoin="round" 
-                stroke-width="2" 
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
                 d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
               />
             </svg>
@@ -152,29 +153,26 @@ const scrollToNews = () => {
 
           <!-- Auth Links -->
           <div v-if="canLogin" class="flex items-center space-x-4">
-            <Link
+            <Button
               v-if="$page.props.auth?.user"
-              :href="route('dashboard')"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
+              as-child
+              class="whitespace-nowrap"
             >
-              Dashboard
-            </Link>
+              <Link :href="route('dashboard')">
+                Dashboard
+              </Link>
+            </Button>
 
             <template v-else>
-              <Link
-                :href="route('login')"
-                class="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors whitespace-nowrap"
+              <Button
+                as-child
+                variant="outline"
+                class="whitespace-nowrap"
               >
-                Log in
-              </Link>
-
-              <Link
-                v-if="canRegister"
-                :href="route('register')"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors whitespace-nowrap"
-              >
-                Register
-              </Link>
+                <Link :href="route('login')">
+                  Log in
+                </Link>
+              </Button>
             </template>
           </div>
         </div>
@@ -270,8 +268,8 @@ html, body {
 :global(.theme-transition *),
 :global(.theme-transition *:before),
 :global(.theme-transition *:after) {
-  transition: background-color 0.3s ease-in-out, 
-              border-color 0.3s ease-in-out, 
+  transition: background-color 0.3s ease-in-out,
+              border-color 0.3s ease-in-out,
               color 0.3s ease-in-out,
               fill 0.3s ease-in-out,
               stroke 0.3s ease-in-out,
@@ -304,8 +302,8 @@ html, body {
 
 /* Enhanced CSS for better transitions */
 * {
-  transition: background-color 0.2s ease-in-out, 
-              border-color 0.2s ease-in-out, 
+  transition: background-color 0.2s ease-in-out,
+              border-color 0.2s ease-in-out,
               color 0.2s ease-in-out;
 }
 

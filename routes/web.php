@@ -11,7 +11,7 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Landing/LandingView', [
         'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canRegister' => false, // Disabled registration
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);

@@ -2,8 +2,8 @@
 import Checkbox from "@/Components/Checkbox.vue";
 import InputError from "@/Components/InputError.vue";
 import InputLabel from "@/Components/InputLabel.vue";
-import PrimaryButton from "@/Components/PrimaryButton.vue";
 import TextInput from "@/Components/TextInput.vue";
+import { Button } from "@/Components/ui/button";
 import { Head, Link, useForm } from "@inertiajs/vue3";
 
 defineProps({
@@ -168,8 +168,9 @@ const submit = () => {
 
           <!-- Submit Button -->
           <div class="pt-4">
-            <PrimaryButton
-              class="w-full justify-center bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-ring/20"
+            <Button
+              type="submit"
+              class="w-full justify-center font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-ring/20"
               :class="{ 'opacity-75 cursor-not-allowed': form.processing }"
               :disabled="form.processing"
             >
@@ -177,21 +178,15 @@ const submit = () => {
                 Sign In
               </div>
               <div v-else class="flex items-center justify-center">Signing in...</div>
-            </PrimaryButton>
+            </Button>
           </div>
         </form>
       </div>
 
-      <!-- Footer -->
+      <!-- Footer - Register link removed -->
       <div class="text-center">
         <p class="text-sm text-muted-foreground">
-          Don't have an account?
-          <Link
-            :href="route('register')"
-            class="font-medium text-primary hover:text-primary/80 hover:underline transition-colors duration-200"
-          >
-            Sign up here
-          </Link>
+          Sistem terbatas untuk admin dan alumni terdaftar
         </p>
       </div>
     </div>
