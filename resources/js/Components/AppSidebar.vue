@@ -43,12 +43,12 @@ const items = [
   },
   {
     title: "Berita",
-    url: "berita.index",
+    url: "admin.berita.index",
     icon: FileText,
   },
   {
     title: "Kategori",
-    url: "kategori.index",
+    url: "admin.kategori.index",
     icon: Tag,
   },
 ];
