@@ -19,7 +19,7 @@ defineProps({
 
     <LandingLayout :can-login="canLogin" :can-register="canRegister">
         <!-- Hero Section -->
-        <div class="container mx-auto px-6 py-16 lg:py-24 transition-all duration-300 ease-in-out">
+        <div class="container mx-auto px-6 md:pl-24 py-16 lg:py-24 transition-all duration-300 ease-in-out">
             <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <!-- Left Content -->
                 <div class="space-y-8 transition-all duration-300 ease-in-out">
@@ -39,35 +39,10 @@ defineProps({
                         </p>
                     </div>
 
-                    <!-- CTA Buttons - Only show if user is logged in -->
-                    <div v-if="$page.props.auth?.user" class="flex flex-col sm:flex-row gap-4">
-                        <Button
-                            as-child
-                            size="lg"
-                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-                        >
-                            <Link :href="route('dashboard')">
-                                Ke Dashboard
-                            </Link>
-                        </Button>
-                    </div>
-
-                    <!-- Login prompt for guests -->
-                    <div v-else class="flex flex-col sm:flex-row gap-4">
-                        <Button
-                            as-child
-                            size="lg"
-                            class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-                        >
-                            <Link :href="route('login')">
-                                Masuk ke Akun
-                            </Link>
-                        </Button>
-                    </div>
                 </div>
 
                 <!-- Right Content - Illustration -->
-                <div class="relative max-w-md mx-auto lg:mx-0 transition-all duration-500 ease-in-out">
+                <div class="relative max-w-md mx-auto lg:mx-0 transition-all duration-500 ease-in-out hidden lg:block">
                     <!-- Background Elements -->
                     <div class="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-full transform rotate-6 scale-105 transition-all duration-500 ease-in-out"></div>
 

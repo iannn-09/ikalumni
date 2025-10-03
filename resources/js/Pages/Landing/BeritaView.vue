@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 
@@ -7,10 +7,15 @@ import axios from 'axios';
 const news = ref([]);
 const isLoadingNews = ref(true);
 
+// Screen size detection
+const isMobile = ref(false);
+
 // Pagination state
 const currentPage = ref(1);
-const itemsPerPage = 3; // Fixed value
 const totalItems = ref(0);
+
+// Dynamic items per page based on screen size
+const itemsPerPage = computed(() => isMobile.value ? 1 : 3);
 
 // Sample news data as fallback
 const getSampleNews = () => [
@@ -70,6 +75,11 @@ const getSampleNews = () => [
     }
 ];
 
+// Screen size detection function
+const checkScreenSize = () => {
+    isMobile.value = window.innerWidth < 768; // md breakpoint
+};
+
 // Fetch news from API
 const fetchNews = async () => {
     try {
@@ -81,8 +91,8 @@ const fetchNews = async () => {
         totalItems.value = publishedNews.length;
 
         // Get paginated data
-        const startIndex = (currentPage.value - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
+        const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+        const endIndex = startIndex + itemsPerPage.value;
         news.value = publishedNews.slice(startIndex, endIndex);
     } catch (error) {
         console.error('Error fetching news:', error);
@@ -90,8 +100,8 @@ const fetchNews = async () => {
         const sampleData = getSampleNews();
         totalItems.value = sampleData.length;
 
-        const startIndex = (currentPage.value - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
+        const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+        const endIndex = startIndex + itemsPerPage.value;
         news.value = sampleData.slice(startIndex, endIndex);
     } finally {
         isLoadingNews.value = false;
@@ -99,7 +109,7 @@ const fetchNews = async () => {
 };
 
 // Computed properties for pagination
-const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage));
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value));
 
 const visiblePages = computed(() => {
     const pages = [];
@@ -179,73 +189,79 @@ const truncateText = (text, maxLength = 150) => {
 
 // Initialize component
 onMounted(() => {
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
     fetchNews();
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkScreenSize);
 });
 </script>
 
 <template>
-    <section class="py-20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 news-section transition-all duration-300 ease-in-out">
-        <div class="container mx-auto px-6 transition-all duration-300 ease-in-out">
+    <section class="py-12 md:py-16 lg:py-20 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 news-section transition-all duration-300 ease-in-out">
+        <div class="container mx-auto px-4 md:px-6 transition-all duration-300 ease-in-out">
             <!-- Section Header -->
-            <div class="text-center mb-16 transition-all duration-500 ease-in-out">
-                <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300 ease-in-out">
+            <div class="text-center mb-8 md:mb-12 lg:mb-16 transition-all duration-500 ease-in-out">
+                <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4 transition-colors duration-300 ease-in-out">
                     Berita & Informasi Terkini
                 </h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto transition-colors duration-300 ease-in-out">
+                <p class="text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto transition-colors duration-300 ease-in-out px-4">
                     Tetap update dengan berita terbaru dari komunitas alumni Sekolah Vokasi UNS
                 </p>
             </div>
 
             <!-- Loading State -->
-            <div v-if="isLoadingNews" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div v-if="isLoadingNews" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-8 md:mb-12">
                 <div v-for="n in itemsPerPage" :key="n" class="animate-pulse transition-all duration-300 ease-in-out">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl shadow-lg overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="aspect-video bg-gray-300 dark:bg-gray-600"></div>
-                        <div class="p-6">
-                            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24 mb-3"></div>
-                            <div class="h-6 bg-gray-300 dark:bg-gray-600 rounded w-full mb-3"></div>
-                            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-full mb-2"></div>
-                            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-4"></div>
-                            <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
+                        <div class="p-4 md:p-6">
+                            <div class="h-3 md:h-4 bg-gray-300 dark:bg-gray-600 rounded w-20 md:w-24 mb-2 md:mb-3"></div>
+                            <div class="h-5 md:h-6 bg-gray-300 dark:bg-gray-600 rounded w-full mb-2 md:mb-3"></div>
+                            <div class="h-3 md:h-4 bg-gray-300 dark:bg-gray-600 rounded w-full mb-1 md:mb-2"></div>
+                            <div class="h-3 md:h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-3 md:mb-4"></div>
+                            <div class="h-3 md:h-4 bg-gray-300 dark:bg-gray-600 rounded w-24 md:w-32"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- News Cards -->
-            <div v-else-if="news && news.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div v-else-if="news && news.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 mb-8 md:mb-12">
                 <article
                     v-for="item in news"
                     :key="item.id"
-                    class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 ease-in-out overflow-hidden group transform hover:-translate-y-2"
+                    class="bg-white dark:bg-gray-800 rounded-xl md:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 ease-in-out overflow-hidden group transform hover:-translate-y-1 md:hover:-translate-y-2"
                 >
                     <div class="aspect-video relative overflow-hidden">
                         <img
                             :src="item.thumbnail || `https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&h=250&fit=crop&crop=center`"
                             :alt="item.judul || 'News image'"
-                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-in-out"
+                            class="w-full h-full object-cover group-hover:scale-105 md:group-hover:scale-110 transition-transform duration-500 ease-in-out"
                             @error="$event.target.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&h=250&fit=crop&crop=center'"
                         />
-                        <div :class="['absolute top-4 left-4 text-white px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ease-in-out', getCategoryColor(item.kategori?.nama)]">
+                        <div :class="['absolute top-2 md:top-4 left-2 md:left-4 text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium transition-all duration-300 ease-in-out', getCategoryColor(item.kategori?.nama)]">
                             {{ item.kategori?.nama || 'Berita' }}
                         </div>
                     </div>
-                    <div class="p-6 transition-all duration-300 ease-in-out">
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3 transition-colors duration-300 ease-in-out">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-4 md:p-6 transition-all duration-300 ease-in-out">
+                        <div class="flex items-center gap-1 md:gap-2 text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-2 md:mb-3 transition-colors duration-300 ease-in-out">
+                            <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            <span>{{ formatDate(item.published_at || item.created_at) }}</span>
+                            <span>{{ formatDate(item.published_at || item.created_at).split(' ').slice(0, 2).join(' ') }}</span>
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 transition-colors duration-300 ease-in-out">
+                        <h3 class="text-base md:text-lg lg:text-xl font-bold text-gray-900 dark:text-white mb-2 md:mb-3 line-clamp-2 transition-colors duration-300 ease-in-out">
                             {{ item.judul || 'Untitled' }}
                         </h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm line-clamp-3 mb-4 transition-colors duration-300 ease-in-out">
-                            {{ truncateText((item.content || '').replace(/<[^>]*>/g, '')) }}
+                        <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base line-clamp-3 mb-3 md:mb-4 transition-colors duration-300 ease-in-out">
+                            {{ truncateText((item.content || '').replace(/<[^>]*>/g, ''), 100) }}
                         </p>
                         <Link
                             :href="'/berita/' + (item.slug || item.id)"
-                            class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm group transition-all duration-300 ease-in-out hover:translate-x-1"
+                            class="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm md:text-base group transition-all duration-300 ease-in-out hover:translate-x-1"
                         >
                             Baca Selengkapnya
                             <svg class="w-4 h-4 ml-1 group-hover:translate-x-2 transition-transform duration-300 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,34 +273,34 @@ onMounted(() => {
             </div>
 
             <!-- Empty State -->
-            <div v-else-if="!isLoadingNews" class="text-center py-12">
-                <svg class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div v-else-if="!isLoadingNews" class="text-center py-8 md:py-12 px-4">
+                <svg class="w-12 h-12 md:w-16 md:h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Belum Ada Berita</h3>
-                <p class="text-gray-600 dark:text-gray-400">Berita akan ditampilkan di sini setelah dipublikasikan.</p>
+                <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2">Belum Ada Berita</h3>
+                <p class="text-sm md:text-base text-gray-600 dark:text-gray-400">Berita akan ditampilkan di sini setelah dipublikasikan.</p>
             </div>
 
             <!-- Pagination -->
-            <div v-if="!isLoadingNews && totalPages > 1" class="flex flex-col items-center space-y-4 transition-all duration-300 ease-in-out">
-
+            <div v-if="!isLoadingNews && totalPages > 1" class="flex flex-col items-center space-y-3 md:space-y-4 transition-all duration-300 ease-in-out px-4">
                 <!-- Pagination Controls -->
-                <nav class="flex items-center space-x-2 transition-all duration-300 ease-in-out" aria-label="Pagination">
+                <nav class="flex items-center space-x-1 md:space-x-2 transition-all duration-300 ease-in-out" aria-label="Pagination">
                     <!-- Previous Button -->
                     <button
                         @click="prevPage"
                         :disabled="!hasPrevPage"
                         :class="[
-                            'flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105',
+                            'flex items-center px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 ease-in-out transform hover:scale-105',
                             hasPrevPage
                                 ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:shadow-lg'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         ]"
                     >
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
-                        Sebelumnya
+                        <span class="hidden sm:inline">Sebelumnya</span>
+                        <span class="sm:hidden">Prev</span>
                     </button>
 
                     <!-- Page Numbers -->
@@ -293,11 +309,11 @@ onMounted(() => {
                         <template v-if="visiblePages[0] > 1">
                             <button
                                 @click="goToPage(1)"
-                                class="w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 transition-colors"
+                                class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg text-xs md:text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 transition-colors"
                             >
                                 1
                             </button>
-                            <span v-if="visiblePages[0] > 2" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                            <span v-if="visiblePages[0] > 2" class="px-1 md:px-2 text-gray-500 dark:text-gray-400 text-xs md:text-sm">...</span>
                         </template>
 
                         <!-- Visible page numbers -->
@@ -306,7 +322,7 @@ onMounted(() => {
                             :key="page"
                             @click="goToPage(page)"
                             :class="[
-                                'w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors',
+                                'w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg text-xs md:text-sm font-medium transition-colors',
                                 page === currentPage
                                     ? 'bg-blue-600 text-white shadow-md'
                                     : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
@@ -317,10 +333,10 @@ onMounted(() => {
 
                         <!-- Last page if not visible -->
                         <template v-if="visiblePages[visiblePages.length - 1] < totalPages">
-                            <span v-if="visiblePages[visiblePages.length - 1] < totalPages - 1" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+                            <span v-if="visiblePages[visiblePages.length - 1] < totalPages - 1" class="px-1 md:px-2 text-gray-500 dark:text-gray-400 text-xs md:text-sm">...</span>
                             <button
                                 @click="goToPage(totalPages)"
-                                class="w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 transition-colors"
+                                class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-lg text-xs md:text-sm font-medium bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 transition-colors"
                             >
                                 {{ totalPages }}
                             </button>
@@ -332,14 +348,15 @@ onMounted(() => {
                         @click="nextPage"
                         :disabled="!hasNextPage"
                         :class="[
-                            'flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ease-in-out',
+                            'flex items-center px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-300 ease-in-out',
                             hasNextPage
                                 ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                         ]"
                     >
-                        Selanjutnya
-                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <span class="hidden sm:inline">Selanjutnya</span>
+                        <span class="sm:hidden">Next</span>
+                        <svg class="w-3 h-3 md:w-4 md:h-4 ml-1 md:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                         </svg>
                     </button>
