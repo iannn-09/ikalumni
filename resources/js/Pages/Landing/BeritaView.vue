@@ -92,13 +92,26 @@ const normalizeThumbnail = (thumb) => {
     }
 };
 
+// helper: sort news by date (newest first)
+const sortNewsByDateDesc = (arr) => {
+    if (!Array.isArray(arr)) return arr;
+    return arr.sort((a, b) => {
+        const aDate = new Date(a.published_at || a.created_at || 0).getTime();
+        const bDate = new Date(b.published_at || b.created_at || 0).getTime();
+        return bDate - aDate; // newest first
+    });
+};
+
 // Fetch news from API
 const fetchNews = async () => {
     try {
         isLoadingNews.value = true;
         const response = await api.get('/api/berita');
         const allData = Array.isArray(response.data) ? response.data : response.data?.data || [];
-        const publishedNews = allData.filter(item => item.status === 'published');
+        let publishedNews = allData.filter(item => item.status === 'published');
+
+        // sort newest first
+        publishedNews = sortNewsByDateDesc(publishedNews);
 
         totalItems.value = publishedNews.length;
 
@@ -111,13 +124,15 @@ const fetchNews = async () => {
         }));
     } catch (error) {
         console.error('Error fetching news:', error);
-        // Fallback to sample data if API fails
-        const sampleData = getSampleNews().map(item => ({ ...item, thumbnail: normalizeThumbnail(item.thumbnail) }));
-        totalItems.value = sampleData.length;
+    // Fallback to sample data if API fails
+    let sampleData = getSampleNews().map(item => ({ ...item, thumbnail: normalizeThumbnail(item.thumbnail) }));
+    // sort newest first
+    sampleData = sortNewsByDateDesc(sampleData);
+    totalItems.value = sampleData.length;
 
-        const startIndex = (currentPage.value - 1) * itemsPerPage.value;
-        const endIndex = startIndex + itemsPerPage.value;
-        news.value = sampleData.slice(startIndex, endIndex);
+    const startIndex = (currentPage.value - 1) * itemsPerPage.value;
+    const endIndex = startIndex + itemsPerPage.value;
+    news.value = sampleData.slice(startIndex, endIndex);
     } finally {
         isLoadingNews.value = false;
     }
