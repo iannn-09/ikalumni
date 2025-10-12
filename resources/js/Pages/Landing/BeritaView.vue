@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import axios from 'axios';
+// replace axios with centralized api
+import api from '@/lib/axios';
 
 // News data state
 const news = ref([]);
@@ -80,24 +81,38 @@ const checkScreenSize = () => {
     isMobile.value = window.innerWidth < 768; // md breakpoint
 };
 
+// helper: normalisasi thumbnail
+const normalizeThumbnail = (thumb) => {
+    if (!thumb) return '';
+    try {
+        const url = new URL(thumb, window.location.origin);
+        return url.href;
+    } catch {
+        return thumb;
+    }
+};
+
 // Fetch news from API
 const fetchNews = async () => {
     try {
         isLoadingNews.value = true;
-        const response = await axios.get('/api/berita');
-        const newsData = response.data || [];
-        const publishedNews = newsData.filter(item => item.status === 'published');
+        const response = await api.get('/api/berita');
+        const allData = Array.isArray(response.data) ? response.data : response.data?.data || [];
+        const publishedNews = allData.filter(item => item.status === 'published');
 
         totalItems.value = publishedNews.length;
 
-        // Get paginated data
+        // Get paginated data and normalize thumbnail
         const startIndex = (currentPage.value - 1) * itemsPerPage.value;
         const endIndex = startIndex + itemsPerPage.value;
-        news.value = publishedNews.slice(startIndex, endIndex);
+        news.value = publishedNews.slice(startIndex, endIndex).map(item => ({
+            ...item,
+            thumbnail: normalizeThumbnail(item.thumbnail) || item.thumbnail,
+        }));
     } catch (error) {
         console.error('Error fetching news:', error);
         // Fallback to sample data if API fails
-        const sampleData = getSampleNews();
+        const sampleData = getSampleNews().map(item => ({ ...item, thumbnail: normalizeThumbnail(item.thumbnail) }));
         totalItems.value = sampleData.length;
 
         const startIndex = (currentPage.value - 1) * itemsPerPage.value;

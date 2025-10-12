@@ -2,7 +2,8 @@
 import { ref, onMounted, computed } from "vue";
 import { Head, Link } from "@inertiajs/vue3";
 import LandingLayout from "@/Layouts/LandingLayout.vue";
-import axios from "axios";
+// replace axios with centralized api
+import api from '@/lib/axios';
 
 const props = defineProps({
   slug: {
@@ -17,12 +18,24 @@ const relatedNews = ref([]);
 const recommendedNews = ref([]);
 const isLoading = ref(true);
 
+// helper: normalisasi thumbnail
+const normalizeThumbnail = (thumb) => {
+  if (!thumb) return "";
+  try {
+    const url = new URL(thumb, window.location.origin);
+    return url.href;
+  } catch {
+    return thumb;
+  }
+};
+
 // Fetch article details from API
 const fetchArticle = async () => {
   try {
     isLoading.value = true;
-    const response = await axios.get(`/api/berita/${props.slug}`);
-    article.value = response.data;
+    const response = await api.get(`/api/berita/${props.slug}`);
+    const item = response.data;
+    article.value = { ...item, thumbnail: normalizeThumbnail(item.thumbnail) };
 
     // Fetch related news and recommendations
     if (response.data.kategori_id) {
@@ -41,15 +54,17 @@ const fetchArticle = async () => {
 // Fetch related news
 const fetchRelatedNews = async (categoryId) => {
   try {
-    const response = await axios.get("/api/berita");
-    relatedNews.value = response.data
+    const response = await api.get("/api/berita");
+    const all = Array.isArray(response.data) ? response.data : response.data?.data || [];
+    relatedNews.value = all
       .filter(
         (item) =>
           item.status === "published" &&
           item.kategori_id === categoryId &&
           item.slug !== props.slug
       )
-      .slice(0, 3);
+      .slice(0, 3)
+      .map(i => ({ ...i, thumbnail: normalizeThumbnail(i.thumbnail) }));
   } catch (error) {
     console.error("Error fetching related news:", error);
     relatedNews.value = [];
@@ -59,19 +74,21 @@ const fetchRelatedNews = async (categoryId) => {
 // Fetch recommended news (latest news excluding current article)
 const fetchRecommendedNews = async () => {
   try {
-    const response = await axios.get("/api/berita");
-    recommendedNews.value = response.data
+    const response = await api.get("/api/berita");
+    const all = Array.isArray(response.data) ? response.data : response.data?.data || [];
+    recommendedNews.value = all
       .filter(
         (item) =>
           item.status === "published" &&
           item.slug !== props.slug
       )
       .sort((a, b) => new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at))
-      .slice(0, 5);
+      .slice(0, 5)
+      .map(i => ({ ...i, thumbnail: normalizeThumbnail(i.thumbnail) }));
   } catch (error) {
     console.error("Error fetching recommended news:", error);
     // Fallback to sample recommendations
-    recommendedNews.value = getSampleRecommendations();
+    recommendedNews.value = getSampleRecommendations().map(i => ({ ...i, thumbnail: normalizeThumbnail(i.thumbnail) }));
   }
 };
 

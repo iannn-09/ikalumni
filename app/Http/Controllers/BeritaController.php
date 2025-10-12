@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Berita;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Tag(
@@ -70,12 +71,20 @@ class BeritaController extends Controller
             'judul' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:berita,slug',
             'content' => 'required|string',
-            'thumbnail' => 'nullable|string|max:255',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'kategori_id' => 'required|exists:kategori,id',
             'user_id' => 'required|exists:users,id',
             'status' => 'required|in:draft,published,archived',
             'published_at' => 'nullable|date',
         ]);
+
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('thumbnails', 'public');
+            $validated['thumbnail'] = '/storage/' . $path;
+        } else {
+            $validated['thumbnail'] = null;
+        }
+
         $berita = Berita::create($validated);
         return response()->json($berita, 201);
     }
@@ -148,12 +157,37 @@ class BeritaController extends Controller
             'judul' => 'sometimes|required|string|max:255',
             'slug' => 'sometimes|required|string|max:255|unique:berita,slug,' . $id,
             'content' => 'sometimes|required|string',
-            'thumbnail' => 'nullable|string|max:255',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'kategori_id' => 'sometimes|required|exists:kategori,id',
             'user_id' => 'sometimes|required|exists:users,id',
             'status' => 'sometimes|required|in:draft,published,archived',
             'published_at' => 'nullable|date',
+            'remove_thumbnail' => 'nullable|boolean', // <-- accept remove flag
         ]);
+
+        // If remove_thumbnail requested, delete old file and set thumbnail to null
+        if ($request->boolean('remove_thumbnail')) {
+            if ($berita->thumbnail) {
+                $oldPath = ltrim(str_replace('/storage/', '', $berita->thumbnail), '/');
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $validated['thumbnail'] = null;
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            // delete old file if exists in storage
+            if ($berita->thumbnail) {
+                $oldPath = ltrim(str_replace('/storage/', '', $berita->thumbnail), '/');
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $path = $request->file('thumbnail')->store('thumbnails', 'public');
+            $validated['thumbnail'] = '/storage/' . $path;
+        }
+
         $berita->update($validated);
         return response()->json($berita);
     }

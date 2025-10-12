@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, h, onMounted, reactive } from "vue";
+import { ref, h, onMounted, reactive, nextTick, onUnmounted } from "vue";
 import DashboardLayout from "@/Layouts/DashboardLayout.vue";
 import DataTable from "@/Components/ui/datatable/DataTable.vue";
 import DataTableColumnHeader from "@/Components/ui/datatable/DataTableColumnHeader.vue";
@@ -82,19 +82,50 @@ const formData = reactive({
   judul: "",
   slug: "",
   content: "",
-  thumbnail: "",
+  // thumbnail removed from plain formData; file handled separately
   kategori_id: "",
   user_id: 1, // Default user ID, should be dynamic based on auth
   status: "draft" as const,
   published_at: "",
 });
 
+// new refs to handle file upload + preview
+const thumbnailFile = ref<File | null>(null);
+const thumbnailPreview = ref<string>("");
+
+// NEW: file input UI state + config
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const thumbnailName = ref<string>("");
+const thumbnailSize = ref<number | null>(null);
+const fileError = ref<string>("");
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+// helper: normalisasi thumbnail menjadi URL penuh jika backend mengirim '/storage/...'
+const normalizeThumbnail = (thumb?: string | null) => {
+  if (!thumb) return "";
+  try {
+    // jika sudah absolute URL biarkan saja
+    const url = new URL(thumb, window.location.origin);
+    // jika thumb dimulai dengan /storage atau relative, URL() di atas menggabungkan origin
+    return url.href;
+  } catch {
+    return thumb;
+  }
+};
+
 // Fetch data from API
 const fetchBeritaData = async () => {
   isLoading.value = true;
   try {
     const response = await api.get("/api/berita");
-    data.value = Array.isArray(response.data) ? response.data : response.data.data || [];
+    const items: any[] = Array.isArray(response.data)
+      ? response.data
+      : response.data?.data || [];
+    // normalisasi thumbnail
+    data.value = items.map((it) => ({
+      ...it,
+      thumbnail: normalizeThumbnail(it.thumbnail),
+    }));
     filteredData.value = data.value;
   } catch (error) {
     toast.error("Gagal memuat data berita");
@@ -140,15 +171,87 @@ const openDialog = (item: Berita | null = null) => {
     Object.assign(formData, {
       ...item,
       kategori_id: item.kategori_id?.toString() || "",
+      // do not assign thumbnail into formData; use preview
     });
+    thumbnailPreview.value = item.thumbnail || "";
+    thumbnailFile.value = null;
   } else {
-    Object.keys(formData).forEach((k) => {
-      if (k === "status") formData[k] = "draft";
-      else if (k === "user_id") formData[k] = 1;
-      else formData[k as keyof typeof formData] = "";
-    });
+    // reset fields explicitly to respect types
+    formData.judul = "";
+    formData.slug = "";
+    formData.content = "";
+    formData.kategori_id = "";
+    formData.user_id = 1;
+    formData.status = "draft" as const;
+    formData.published_at = "";
+    thumbnailPreview.value = "";
+    thumbnailFile.value = null;
   }
+  // set editor content after the dialog opens / next tick
   isDialogOpen.value = true;
+  // dialog opened; content already in formData.content
+};
+
+// helper: format bytes
+const formatBytes = (bytes: number) => {
+  if (!bytes) return "0 B";
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+};
+
+// REPLACED onThumbnailChange with validation + metadata
+const onThumbnailChange = (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0] || null;
+
+  // cleanup previous preview if any
+  if (thumbnailPreview.value && thumbnailFile.value) {
+    URL.revokeObjectURL(thumbnailPreview.value);
+  }
+  thumbnailPreview.value = "";
+  thumbnailFile.value = null;
+  thumbnailName.value = "";
+  thumbnailSize.value = null;
+  fileError.value = "";
+
+  if (!file) return;
+
+  // validate type
+  if (!file.type.startsWith("image/")) {
+    fileError.value = "Tipe file tidak didukung. Harap pilih gambar.";
+    return;
+  }
+
+  // validate size
+  if (file.size > MAX_FILE_SIZE) {
+    fileError.value = `Ukuran file terlalu besar (max ${formatBytes(MAX_FILE_SIZE)}).`;
+    return;
+  }
+
+  // valid
+  thumbnailFile.value = file;
+  thumbnailPreview.value = URL.createObjectURL(file);
+  thumbnailName.value = file.name;
+  thumbnailSize.value = file.size;
+};
+
+// NEW: trigger file input
+const triggerFileInput = () => {
+  fileInputRef.value?.click();
+};
+
+// NEW: remove selected thumbnail
+const removeThumbnail = () => {
+  if (thumbnailPreview.value && thumbnailFile.value) {
+    URL.revokeObjectURL(thumbnailPreview.value);
+  }
+  thumbnailFile.value = null;
+  thumbnailPreview.value = "";
+  thumbnailName.value = "";
+  thumbnailSize.value = null;
+  fileError.value = "";
+  // also clear actual input value
+  if (fileInputRef.value) fileInputRef.value.value = "";
 };
 
 const saveItem = async () => {
@@ -158,18 +261,47 @@ const saveItem = async () => {
       formData.slug = generateSlug(formData.judul);
     }
 
-    const payload = { ...formData };
-    if (payload.kategori_id) {
-      payload.kategori_id = parseInt(payload.kategori_id);
+    // Build FormData for multipart upload
+    const payload = new FormData();
+    payload.append("judul", formData.judul);
+    payload.append("slug", formData.slug);
+    payload.append("content", formData.content);
+    if (formData.kategori_id) {
+      payload.append("kategori_id", formData.kategori_id.toString());
+    }
+    payload.append("user_id", formData.user_id.toString());
+    payload.append("status", formData.status);
+    if (formData.published_at) payload.append("published_at", formData.published_at);
+
+    if (thumbnailFile.value) {
+      payload.append("thumbnail", thumbnailFile.value);
     }
 
+    const headers = {
+      "Content-Type": "multipart/form-data",
+    };
+
     if (editingItem.value) {
-      await api.put(`/api/berita/${editingItem.value.id}`, payload);
+      // Use method override for PUT with multipart/form-data
+      payload.append("_method", "PUT");
+      await api.post(`/api/berita/${editingItem.value.id}`, payload, {
+        headers,
+      });
       toast.success("Berita berhasil diperbarui");
     } else {
-      await api.post("/api/berita", payload);
+      await api.post("/api/berita", payload, { headers });
       toast.success("Berita berhasil ditambahkan");
     }
+
+    // cleanup preview/object urls
+    if (thumbnailPreview.value && thumbnailFile.value) {
+      URL.revokeObjectURL(thumbnailPreview.value);
+    }
+    thumbnailFile.value = null;
+    thumbnailPreview.value = "";
+    thumbnailName.value = "";
+    thumbnailSize.value = null;
+    fileError.value = "";
 
     await fetchBeritaData();
     applySearch();
@@ -236,6 +368,8 @@ onMounted(() => {
   fetchBeritaData();
   fetchKategoriData();
 });
+
+// no rich text editor: use plain textarea bound to formData.content
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -435,12 +569,47 @@ const columns: ColumnDef<Berita>[] = [
                           <Textarea id="content" v-model="formData.content" rows="6" />
                         </div>
                         <div class="space-y-2">
-                          <Label for="thumbnail">Thumbnail URL</Label>
-                          <Input
-                            id="thumbnail"
-                            v-model="formData.thumbnail"
-                            placeholder="https://..."
-                          />
+                          <Label for="thumbnail">Thumbnail (gambar)</Label>
+                          <!-- CHANGED: hidden file input + nicer picker UI -->
+                          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <input
+                              ref="fileInputRef"
+                              id="thumbnail"
+                              type="file"
+                              accept="image/*"
+                              class="hidden"
+                              @change="onThumbnailChange"
+                            />
+                            <div class="flex items-center gap-2">
+                              <Button type="button" variant="outline" @click="triggerFileInput" class="gap-2">
+                                Pilih Gambar
+                              </Button>
+
+                              <div v-if="thumbnailName" class="text-sm text-foreground/90">
+                                <div class="font-medium truncate max-w-xs">{{ thumbnailName }}</div>
+                                <div class="text-muted-foreground text-xs">{{ thumbnailSize ? formatBytes(thumbnailSize) : '' }}</div>
+                              </div>
+
+                              <Button
+                                v-if="thumbnailName"
+                                variant="ghost"
+                                class="text-destructive"
+                                type="button"
+                                @click="removeThumbnail"
+                                title="Hapus file"
+                              >
+                                <Trash2 class="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div v-if="fileError" class="text-sm text-red-600 mt-1">
+                            {{ fileError }}
+                          </div>
+
+                          <div v-if="thumbnailPreview" class="pt-2">
+                            <img :src="thumbnailPreview" alt="thumbnail preview" class="max-h-40 rounded" />
+                          </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                           <div class="space-y-2">
